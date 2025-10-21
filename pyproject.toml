@@ -1,5 +1,5 @@
 [project]
-name = "fake-news"
+name = "rag_fake-news"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"

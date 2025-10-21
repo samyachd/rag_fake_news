@@ -9,5 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
-#Database
-/database
+# Database
+/data
+
+# Notebooks
+/notebooks

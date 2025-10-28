@@ -7,7 +7,9 @@ import argparse
 
 RAW_FAKE = Path("data/raw/Fake.csv")
 RAW_TRUE = Path("data/raw/True.csv")
-CHROMA_PATH = Path("data/chroma_db")
+PROCESSED = Path("data/processed/Cleaned.csv")
+CHUNKED = Path("data/chunked/Chunked.csv")
+CHROMA_PATH = Path("data/embeddings")
 COLLECTION = "news_collection"
 COLS = ["title", "text"]
 
@@ -35,21 +37,24 @@ def main():
         print("Rien à faire. Utilise --clean, --chunk, --embed ou --all.")
         return
 
-    if run_clean or run_chunk or run_embed:
+    # Classe PreProcessing : mettre path des 2 CSV (fake, true) et la liste des colonnes à traiter
+    if run_clean:
         print("Étape CLEAN…")
         pp = PreProcessing(RAW_FAKE.as_posix(), RAW_TRUE.as_posix(), COLS)
-        df_clean = pp.clean()
+        df_clean = pp.clean(PROCESSED.as_posix())
         print("CLEAN terminé")
 
-    if run_chunk or run_embed:
+    # Méthode chunk : mettre path_load du cleaned, path_save, liste des colonnes à traiter et paramètres de chunk/overlap
+    if run_chunk:
         print("Étape CHUNK…")
-        df_chunked = chunk_text(df_clean, COLS, chunk_size=args.chunk_size, overlap=args.overlap)
+        df_chunked = chunk_text(PROCESSED.as_posix(), CHUNKED.as_posix(), COLS, chunk_size=args.chunk_size, overlap=args.overlap)
         print("CHUNK terminé")
-
+    
+    # Classe Database : mettre path de la DB, nom de la collection
     if run_embed:
-        print("📦 Étape EMBED + UPSERT…")
+        print("Étape EMBED + UPSERT…")
         db = Database(path=CHROMA_PATH.as_posix(), collection_name=COLLECTION)
-        db.embedding_upsert(df_chunked)
+        db.embedding_upsert(CHUNKED.as_posix())
         print("EMBED + UPSERT terminé")
 
 

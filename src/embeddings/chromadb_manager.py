@@ -10,7 +10,8 @@ class Database():
         self.collection_name = collection_name  
             
 
-    def embedding_upsert(self, df:pd.DataFrame):
+    def embedding_upsert(self, path:str):
+        df = pd.read_csv(path)
         ollama_embed = embedding_functions.OllamaEmbeddingFunction(model_name="all-minilm")
           
         collection = self.client.get_or_create_collection(
@@ -51,7 +52,7 @@ class Database():
                 )
 
             except Exception as e:
-                print(f"⚠️ Erreur dans ce batch : {e}")
+                print(f"Erreur dans ce batch : {e}")
                 continue
 
-        print("✅ Insertion terminée avec succès.")
+        print("Insertion terminée avec succès.")

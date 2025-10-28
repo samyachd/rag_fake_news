@@ -1,79 +1,59 @@
-import re
-from bs4 import BeautifulSoup
-import spacy
+from . import get_spacy_model
 import pandas as pd
 
 
 class PreProcessing():
-    def __init__(self, path : str):
-        self.path = path
+    def __init__(self, path_fake:str, path_true:str, cols:list):
+        self.path_fake = path_fake
+        self.path_true = path_true
+        self.cols = cols
 
     def load_csv(self) -> pd.DataFrame:
-        return pd.read_csv(self.path)
-
+        
+        df_fake = pd.read_csv(self.path_fake)
+        df_true = pd.read_csv(self.path_true)
+        for col in self.cols:
+            if col not in df_fake.columns or col not in df_true.columns:
+                raise ValueError(f"Colonne manquante dans le DataFrame : {col}")
+        df_fake["label"] = 1
+        df_true["true"] = 0
+        df = pd.concat([df_fake, df_true])
+        df = df.drop_duplicates()
+        return df
+    
     def delete_url_html_specials_lower(self, df:pd.DataFrame) -> pd.DataFrame:
         """Suppprime les URLs du texte"""
-        with df["title"] as title, df["text"] as text:
-            title = title.str.replace(r'http[s]?://\S+', '<URL>', regex=True)
-            text = text.str.replace(r'http[s]?://\S+', '<URL>', regex=True)
-            title = title.str.replace(r'<.*?>', '', regex=True)
-            text = text.str.replace(r'<.*?>', '', regex=True)
-            title = title.str.replace(r"[^\w\s]",'', regex=True)
-            text = text.str.replace(r"[^\w\s]",'', regex=True)
-            title = title.str.lower()
-            text = title.str.lower()
+        for col in self.cols:
+            df[col] = (
+                df[col]
+                .fillna("")
+                .astype(str)
+                .str.replace(r"http[s]?://\S+", "<URL>", regex=True)
+                .str.replace(r"<.*?>", "", regex=True)
+                .str.replace(r"[^\w\s]", "", regex=True)
+                .str.lower()
+            )
         return df
-
-
-    def to_lowercase(text):
-        """Convertit le texte en minuscule"""
-        return text.lower()
-
-    nlp = spacy.load("en_core_web_sm")
-    def delete_stopwords(text):
+    
+    def delete_stopwords(self, df:pd.DataFrame) -> pd.DataFrame:
         """
         Supprime les stopwords du texte
         Returns:
             str: Text with stopwords removed
         """
-        if not isinstance(text, str):
-            return ""
-        try:
-            doc = nlp(text)
-            tokens = [token.text for token in doc if not token.is_stop and token.text.strip()]
-            return " ".join(tokens)
-        except Exception as e:
-            print(f"Error in delete_stopwords: {str(e)}")
-            return text
+        nlp = get_spacy_model()
+        for col in self.cols:
+            cleaned_col = []
+            for doc in nlp.pipe(df[col].fillna("").astype(str).tolist(), disable=["parser", "ner"]):
+                tokens = [tok.text for tok in doc if tok.text.strip() and not tok.is_stop]
+                cleaned_col.append(" ".join(tokens))
+            df[col] = cleaned_col
+        return df
+    
+    def clean(self, path:str):
 
-    def clean_text_pipeline(text):
-        if not isinstance(text, str):
-            return ""
-        text = delete_urls(text)
-        text = delete_html_rags(text)
-        text = delete_special_charaters(text)
-        text = to_lowercase(text)
-        text = delete_stopwords(text)
-        return text
-
-
-    sample = "<p>This is a FAKE news about https://fake.com politics!!</p>"
-    print(clean_text_pipeline(sample))
-
-
-    def chunk_text(text, chunk_size=200, overlap=50):
-        """
-        Découpe un texte en plusieurs morceaux (chunks)
-        avec un chevauchement optionnel.
-        
-        text : str → le texte à découper
-        chunk_size : int → nombre de mots par chunk
-        overlap : int → nombre de mots qui se chevauchent entre deux chunks
-        """
-        words = text.split()
-        chunks = []
-        
-        for i in range(0, len(words), chunk_size - overlap):
-            chunk = words[i:i + chunk_size]
-            chunks.append(" ".join(chunk))
-        return chunks
+        df = self.load_csv()
+        df = self.delete_url_html_specials_lower(df)
+        df = self.delete_stopwords(df)
+        df.to_csv(path)
+        return df

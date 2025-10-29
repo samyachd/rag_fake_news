@@ -15,8 +15,8 @@ class PreProcessing():
         for col in self.cols:
             if col not in df_fake.columns or col not in df_true.columns:
                 raise ValueError(f"Colonne manquante dans le DataFrame : {col}")
-        df_fake["label"] = 1
-        df_true["true"] = 0
+        df_fake["label"] = 0
+        df_true["true"] = 1
         df = pd.concat([df_fake, df_true])
         df = df.drop_duplicates()
         return df

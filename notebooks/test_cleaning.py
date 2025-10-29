@@ -67,24 +67,3 @@ sample = "<p>This is a FAKE news about https://fake.com politics!!</p>"
 print(clean_text_pipeline(sample))
 # ➜ "fake news politics"
 
-
-# fonction pour le chunking le déoupage des texte en plusieurs token
-def chunk_text(text, chunk_size=200, overlap=50):
-    """
-    Découpe un texte en plusieurs morceaux (chunks)
-    avec un chevauchement optionnel.
-    
-    text : str → le texte à découper
-    chunk_size : int → nombre de mots par chunk
-    overlap : int → nombre de mots qui se chevauchent entre deux chunks
-    """
-    # Séparer le texte en mots
-    words = text.split()
-    chunks = []
-    
-    # Parcourir les mots par étapes de (chunk_size - overlap)
-    for i in range(0, len(words), chunk_size - overlap):
-        chunk = words[i:i + chunk_size]   # Découper un morceau
-        chunks.append(" ".join(chunk))    # Reformer le texte du chunk
-    
-    return chunks

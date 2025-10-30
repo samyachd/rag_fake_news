@@ -1,6 +1,6 @@
 import pandas as pd
 
-def chunk_text(path_load:str, cols:list, chunk_size=160, overlap=30) -> pd.DataFrame:
+def chunk(path_load:str, cols:list, chunk_size=160, overlap=30) -> pd.DataFrame:
         """
         Découpe les textes des colonnes spécifiées dans self.cols en morceaux (chunks)
         avec un chevauchement optionnel entre les segments.

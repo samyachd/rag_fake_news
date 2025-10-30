@@ -1,9 +1,5 @@
-from . import retriever
+def prompt_build_text(context:str, user_text:str) -> str:
 
-def prompt_build_text(context, user_text):
-    # -------------------------
-    # Construction du prompt
-    # -------------------------
     prompt = f"""
     You are an assistant specialized in verifying information.
     You are given text chunks labeled [TRUE] or [FAKE].

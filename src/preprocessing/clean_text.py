@@ -1,4 +1,4 @@
-from . import get_spacy_model
+from src.preprocessing import get_spacy_model
 import pandas as pd
 
 

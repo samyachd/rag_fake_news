@@ -5,7 +5,7 @@ import ast
 def normalize_vectors(vectors):
     return [v / np.linalg.norm(v) if np.linalg.norm(v) > 0 else v for v in vectors]
 
-def embedding_upsert(self, client, collection, embed, df:pd.DataFrame):
+def embedding_upsert(collection, embed, df:pd.DataFrame):
         
     if df["chunks"].dtype == object:
         try:

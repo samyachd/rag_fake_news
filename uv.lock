@@ -1438,6 +1438,12 @@ wheels = [
 ]
 
 [[package]]
+name = "learn"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cc/2c/0d77289eeec494c024ff0f7412b5d8b0dbe0b3432cb7b6cab75773438500/learn-1.0.0.zip", hash = "sha256:46ba34870ae8fc3f6e70ce30f44a10a07540b332da7a33202dbbdf3c65874043", size = 818, upload-time = "2013-10-28T21:06:09.051Z" }
+
+[[package]]
 name = "marisa-trie"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2817,15 +2823,18 @@ dependencies = [
     { name = "chromadb" },
     { name = "fastapi" },
     { name = "jupyter" },
+    { name = "learn" },
     { name = "nltk" },
     { name = "numpy" },
     { name = "ollama" },
     { name = "openai" },
     { name = "pandas" },
     { name = "pip" },
+    { name = "sci-kit" },
     { name = "scikit-learn" },
     { name = "spacy" },
     { name = "streamlit" },
+    { name = "typer" },
     { name = "uvicorn" },
 ]
 
@@ -2834,15 +2843,18 @@ requires-dist = [
     { name = "chromadb", specifier = ">=1.2.1" },
     { name = "fastapi", specifier = ">=0.120.2" },
     { name = "jupyter", specifier = ">=1.1.1" },
+    { name = "learn", specifier = ">=1.0.0" },
     { name = "nltk", specifier = ">=3.9.2" },
     { name = "numpy", specifier = ">=2.3.4" },
     { name = "ollama", specifier = ">=0.6.0" },
     { name = "openai", specifier = ">=2.6.0" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "pip", specifier = ">=25.3" },
+    { name = "sci-kit", specifier = ">=0.1.0" },
     { name = "scikit-learn", specifier = ">=1.7.2" },
     { name = "spacy", specifier = ">=3.8.7" },
     { name = "streamlit", specifier = ">=1.50.0" },
+    { name = "typer", specifier = ">=0.20.0" },
     { name = "uvicorn", specifier = ">=0.38.0" },
 ]
 
@@ -3103,6 +3115,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/da/8a/22b7beea3ee0d44b1916c0c1cb0ee3af23b700b6da9f04991899d0c555d4/rsa-4.9.1.tar.gz", hash = "sha256:e7bdbfdb5497da4c07dfd35530e1a902659db6ff241e39d9953cad06ebd0ae75", size = 29034, upload-time = "2025-04-16T09:51:18.218Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/64/8d/0133e4eb4beed9e425d9a98ed6e081a55d195481b7632472be1af08d2f6b/rsa-4.9.1-py3-none-any.whl", hash = "sha256:68635866661c6836b8d39430f97a996acbd61bfa49406748ea243539fe239762", size = 34696, upload-time = "2025-04-16T09:51:17.142Z" },
+]
+
+[[package]]
+name = "sci-kit"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pandas" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1e/1e/c626aa21a06c4a131a53470cd67f15751afd7df8acd1e65d3afa8a282c83/sci_kit-0.1.0.tar.gz", hash = "sha256:72e7fd5fa919381f06a28458df321c5aced0dd0e1a347be9fde1055cd9194bca", size = 2850, upload-time = "2025-08-17T15:04:43.812Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/96/e6/425383c6e7590a682af0b41739374ed1551d13924e348b05e90ade6cc22c/sci_kit-0.1.0-py3-none-any.whl", hash = "sha256:9fd52a8aa7c90294931ac5a6dacf2691ba7700071e726e391b905585a45e507d", size = 3178, upload-time = "2025-08-17T15:04:42.657Z" },
 ]
 
 [[package]]

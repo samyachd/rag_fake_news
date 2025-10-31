@@ -1,14 +1,12 @@
 import pandas as pd
 import numpy as np
 import os
-from open_client import OpenClient
-
-client = OpenClient()
+from openai import AzureOpenAI
 
 def normalize_vectors(vectors):
     return [v / np.linalg.norm(v) if np.linalg.norm(v) > 0 else v for v in vectors]
 
-def embedding_upsert(collection, df:pd.DataFrame):
+def embedding_upsert(collection, df:pd.DataFrame, client: AzureOpenAI):
         
     if df["chunks"].dtype == object:
         try:

@@ -1,7 +1,6 @@
 from src.preprocessing import get_spacy_model
 import pandas as pd
 
-
 class PreProcessing():
     def __init__(self, path_fake:str, path_true:str, cols:list):
         self.path_fake = path_fake
@@ -50,10 +49,14 @@ class PreProcessing():
             df[col] = cleaned_col
         return df
     
-    def clean(self, path:str):
+    def clean(self):
 
         df = self.load_csv()
         df = self.delete_url_html_specials_lower(df)
         df = self.delete_stopwords(df)
-        df.to_csv(path)
         return df
+    
+    def save_to_df(df, path:str):
+        
+        df.to_csv(path)
+        return

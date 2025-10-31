@@ -1,9 +1,12 @@
 from src.embeddings import normalize_vectors
-from embeddings.embed_upsert_normalize import embed
+from openai import AzureOpenAI
+from src.preprocessing.clean_text import PreProcessing
 
-def retrieve_text(collection, user_text:str) -> list:
+def retrieve_text(client: AzureOpenAI, collection, user_text:str) -> list:
 
-    query_embedding = embed([user_text])
+    pp = PreProcessing()
+    df_clean = 
+    query_embedding = client.embed([user_text])
     query_embedding = normalize_vectors(query_embedding)
 
     n_chunks = 10

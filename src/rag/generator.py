@@ -1,23 +1,18 @@
 import re
-from src.embeddings import OpenClient
-
-client = OpenClient()
+from openai import AzureOpenAI
 
 # --- Fonction principale ---
-def generator_text(prompt: str, labels: list) -> tuple[str, str, str]:
+def generator_text(client: AzureOpenAI, prompt: str, labels: list) -> tuple[str, str, str]:
+
     """
     Envoie le prompt au modèle Azure, nettoie le texte, et calcule
     le verdict majoritaire et la cohérence avec les labels.
     """
     # Appel Azure OpenAI
-    response = client.chat.completions.create(
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant specialized in fake news detection."},
-            {"role": "user", "content": prompt},
-        ],
-        model="o4-mini",
-        max_completion_tokens=2000
-    )
+    response = client.chat([
+    {"role": "system", "content": "You are a helpful assistant specialized in fake news detection."},
+    {"role": "user", "content": prompt},
+])
 
     # Récupération du texte généré
     generated_text = response.choices[0].message.content.strip()

@@ -34,3 +34,10 @@ class OpenClient:
     def embed(self, text:list[str]):
         resp = self.client.embeddings.create(input=text, model="text-embedding-3-small")
         return [d.embedding for d in resp.data]
+    
+    def chat(self, messages: list[dict], model: str = "o4-mini", max_tokens: int = 2000):
+        return self.client.chat.completions.create(
+        messages=messages,
+        model=model,
+        max_completion_tokens=max_tokens
+    )

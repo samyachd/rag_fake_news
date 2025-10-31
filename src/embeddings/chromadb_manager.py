@@ -1,9 +1,7 @@
 import chromadb
-from chromadb.utils import embedding_functions
 
 class Database:
     _instance = None
-    ollama_embed = embedding_functions.OllamaEmbeddingFunction(model_name="all-minilm")
 
     def __new__(cls, path: str = "../data/chroma_db", collection_name: str = "news_collection"):
         if cls._instance is None:
@@ -14,6 +12,7 @@ class Database:
     def __init__(self, path: str = "../data/chroma_db", collection_name: str = "news_collection"):
         if self._initialized:
             return
+        
         self.client = chromadb.PersistentClient(path=path)
         self.collection_name = collection_name
         self._initialized = True

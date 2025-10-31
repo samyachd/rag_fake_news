@@ -1,7 +1,7 @@
 from pathlib import Path
 from src.preprocessing.clean_text import PreProcessing
 from src.preprocessing.chunk_text import chunk
-from src.embeddings import Database, embedding_upsert
+from src.embeddings import Database, OpenClient, embedding_upsert
 from src.rag import retrieve_text, prompt_build_text, generator_text
 from src.evaluation import calculate_metrics
 import typer
@@ -40,7 +40,7 @@ def embed(path_db:str = CHROMA_PATH.as_posix(),
     collection = db.get_collection()
 
     typer.echo("Étape EMBED + UPSERT…")
-    embedding_upsert(collection, db.ollama_embed, df_chunked)
+    embedding_upsert(collection, df_chunked)
     typer.echo("EMBED + UPSERT terminé")
     return
 
@@ -54,7 +54,7 @@ def query(path_db:str = CHROMA_PATH.as_posix(), eval:bool = typer.Option(False, 
     user_text = input()
     typer.echo("Réfléchis ...")
 
-    full_context = retrieve_text(collection, db.ollama_embed, user_text)
+    full_context = retrieve_text(collection, user_text)
     context, labels = full_context[0], full_context[1]
 
     prompt = prompt_build_text(context, user_text)

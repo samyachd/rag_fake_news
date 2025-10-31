@@ -1,3 +1,4 @@
 from .chromadb_manager import Database
-from .embedder import embedding_upsert
-from .embedder import normalize_vectors
+from .open_client import OpenClient
+from .embed_upsert_normalize import embedding_upsert
+from .embed_upsert_normalize import normalize_vectors

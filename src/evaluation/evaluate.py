@@ -1,5 +1,3 @@
-from sklearn.metrics import accuracy_score, classification_report
-
 def calculate_metrics(retrieved_labels, verdict, majority_verdict):
 
     n_true = sum(1 for l in retrieved_labels if l == 1)

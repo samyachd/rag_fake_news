@@ -1,6 +1,7 @@
 from src.embeddings import normalize_vectors
+from embeddings.embed_upsert_normalize import embed
 
-def retrieve_text(collection, embed, user_text:str) -> list:
+def retrieve_text(collection, user_text:str) -> list:
 
     query_embedding = embed([user_text])
     query_embedding = normalize_vectors(query_embedding)

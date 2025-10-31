@@ -1,12 +1,21 @@
 import streamlit as st
 import pathlib as Path
-import chromadb
-import ollama
 import numpy as np
-from . import clean_text_pipeline
+from src.embeddings import Database, OpenClient, normalize_vectors, embedding_upsert
+from src.preprocessing.clean_text import PreProcessing
+from src.rag import retrieve_text, prompt_build_text, generator_text
+from src.evaluation import calculate_metrics
 
+# Constantes
+COLLECTION_NAME = "news_collection"
 CHROMA_PATH = Path("data/embeddings")
-chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
+MODEL_NAME = "all-minilm:latest"
+GEN_MODEL = "phi3:mini"
+TOP_K = 5
+
+db = Database(CHROMA_PATH, collection_name=COLLECTION_NAME)
+collection = db.get_collection()
+client = OpenClient()
 
 # Configuration de la page
 st.set_page_config(
@@ -15,106 +24,14 @@ st.set_page_config(
     layout="wide"
 )
 
-# Constantes
-COLLECTION_NAME = "news_collection"
-MODEL_NAME = "all-minilm:latest"
-GEN_MODEL = "phi3:mini"
-TOP_K = 5
-
-# Fonctions utilitaires
-@st.cache_data
-def init_chroma_client():
-    client = chromadb.PersistentClient(path=CHROMA_PATH)
-    return client.get_or_create_collection(name=COLLECTION_NAME)
-
-def generate_embeddings_ollama(texts, model=MODEL_NAME):
-    response = ollama.embed(model=model, input=texts)
-    return response.get("embeddings", [])[0]
-
-def normalize_vectors(vectors):
-    normalize = []
-    for v in vectors:
-        norm = np.linalg.norm(v)
-        if norm == 0:
-            normalize.append(v)
-        else:
-            normalize.append(v / norm)
-    return normalize
-
-def rag_analysis(user_text: str, top_k: int = TOP_K):
-    # Nettoyage
-    clean_text = clean_text_pipeline(user_text)
-    
-    # Embeddings + normalisation
-    embeddings = generate_embeddings_ollama([clean_text])
-    normalized_emb = normalize_vectors(embeddings)
-    
-    # Connection à ChromaDB
-    chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
-    collection = chroma_client.get_or_create_collection(
-        name=COLLECTION_NAME,
-        embedding_function=None
-    )
-
-    # Recherche similaires
-    results = collection.query(
-        query_embeddings=[normalized_emb],
-        n_results=top_k,
-        include=["documents", "metadatas", "distances"]
-    )
-
-    # Récupération et assemblage du contexte
-    context = "\n".join(results["documents"][0])
-
-            # Génération réponse
-    prompt = f"""
-You are a fact-checking assistant. Analyze the following statement using the provided context.
-If information is missing or contradictory, indicate "INSUFFICIENT EVIDENCE".
-
-Context:
-{context}
-
-Statement to verify:
-"{user_text}"
-
-Respond in this exact format:
-=== CONTEXT ===
-[brief summary of relevant context]
-
-=== MODEL RESPONSE ===
-Verdict: <TRUE|FAKE|INSUFFICIENT EVIDENCE>
-
-Justification: [detailed explanation based on the context]
-
-SOURCES: [titles or labels from the metadata]
-"""
-    response = ollama.chat(
-            model=GEN_MODEL,
-            messages=[
-                {"role": "system", "content": "You are an expert in news verification."},
-                {"role": "user", "content": prompt}
-            ]
-        )
-        
-    return {
-            "test": user_text,
-            "context_used": context,
-            "model_response": response["message"]["content"]
-        }
-
-
-# Interface Streamlit
 st.title("🔍 Détecteur de Fake News")
 st.markdown("""
 Cette application utilise l'IA pour vérifier la véracité d'une information 
 en la comparant avec une base de données d'articles vérifiés.
 """)
 
-# Initialisation de ChromaDB
-collection = chroma_client.get_or_create_collection(
-    name="news_collection",
-    embedding_function=None
-)
+db = Database(CHROMA_PATH, collection_name=COLLECTION_NAME)
+collection = db.get_collection()
 
 # Zone de saisie utilisateur
 with st.form("news_checker"):
@@ -139,7 +56,17 @@ with st.form("news_checker"):
 if submitted and user_text:
     with st.spinner("Analyse en cours..."):
         # Analyse
-        result = rag_analysis(user_text, top_k)
+
+        full_context = retrieve_text(collection, user_text)
+        context, labels = full_context[0], full_context[1]
+
+        prompt = prompt_build_text(context, user_text)
+        response = generator_text(prompt, labels)
+        verdict = response[1]
+        majority_verdict = response[2]
+        calculate_metrics(labels, verdict, majority_verdict)
+    
+        result = (user_text, top_k)
         
         if "error" in result:
             st.error(result["error"])

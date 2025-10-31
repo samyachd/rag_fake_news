@@ -1,11 +1,14 @@
 import pandas as pd
 import numpy as np
-import ast
+import os
+from open_client import OpenClient
+
+client = OpenClient()
 
 def normalize_vectors(vectors):
     return [v / np.linalg.norm(v) if np.linalg.norm(v) > 0 else v for v in vectors]
 
-def embedding_upsert(collection, embed, df:pd.DataFrame):
+def embedding_upsert(collection, df:pd.DataFrame):
         
     if df["chunks"].dtype == object:
         try:
@@ -42,7 +45,7 @@ def embedding_upsert(collection, embed, df:pd.DataFrame):
         print(f"Batch {i//batch_size + 1} / {len(all_docs)//batch_size + 1}")
 
         try:
-            embeddings = embed(batch_docs)
+            embeddings = client.embed(batch_docs)
             normalized_embeddings = normalize_vectors(embeddings)
 
             collection.upsert(

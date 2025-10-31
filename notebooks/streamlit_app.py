@@ -18,6 +18,7 @@ st.set_page_config(
 CHROMA_PATH = "/home/fadilatou/PROJETS/rag_fake_news/data"
 COLLECTION_NAME = "news_collection"
 MODEL_NAME = "all-minilm:latest"
+GEN_MODEL = "phi3:mini"
 TOP_K = 5
 
 # Fonctions utilitaires
@@ -46,8 +47,15 @@ def rag_analysis(user_text: str, top_k: int = TOP_K):
     
     # Embeddings + normalisation
     embeddings = generate_embeddings_ollama([clean_text])
-    normalized_emb = normalize_vectors(embeddings)[0]
+    normalized_emb = normalize_vectors(embeddings)
     
+    # Connection à ChromaDB
+    chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
+    collection = chroma_client.get_or_create_collection(
+        name=COLLECTION_NAME,
+        embedding_function=None
+    )
+
     # Recherche similaires
     results = collection.query(
         query_embeddings=[normalized_emb],
@@ -56,10 +64,44 @@ def rag_analysis(user_text: str, top_k: int = TOP_K):
     )
 
     # Récupération et assemblage du contexte
-    retrieved_chunks = results["documents"][0]
-    context = "\n".join(retrieved_chunks)
-    
-    return results
+    context = "\n".join(results["documents"][0])
+
+            # Génération réponse
+    prompt = f"""
+You are a fact-checking assistant. Analyze the following statement using the provided context.
+If information is missing or contradictory, indicate "INSUFFICIENT EVIDENCE".
+
+Context:
+{context}
+
+Statement to verify:
+"{user_text}"
+
+Respond in this exact format:
+=== CONTEXT ===
+[brief summary of relevant context]
+
+=== MODEL RESPONSE ===
+Verdict: <TRUE|FAKE|INSUFFICIENT EVIDENCE>
+
+Justification: [detailed explanation based on the context]
+
+SOURCES: [titles or labels from the metadata]
+"""
+    response = ollama.chat(
+            model=GEN_MODEL,
+            messages=[
+                {"role": "system", "content": "You are an expert in news verification."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        
+    return {
+            "test": user_text,
+            "context_used": context,
+            "model_response": response["message"]["content"]
+        }
+
 
 # Interface Streamlit
 st.title("🔍 Détecteur de Fake News")
@@ -97,36 +139,34 @@ with st.form("news_checker"):
 if submitted and user_text:
     with st.spinner("Analyse en cours..."):
         # Analyse
-        results = rag_analysis(user_text, top_k)
+        result = rag_analysis(user_text, top_k)
         
-        # Affichage des résultats
-        st.subheader("Résultats de l'analyse")
-        
-        # Statistiques des labels trouvés
-        labels = [meta["label"] for meta in results["metadatas"][0]]
-        true_count = labels.count("True")
-        fake_count = labels.count("Fake")
-        
-        # Affichage des métriques
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Articles vérifiés trouvés", true_count)
-        with col2:
-            st.metric("Articles suspects trouvés", fake_count)
-        
-        # Affichage détaillé des résultats
-        st.subheader("Articles similaires trouvés")
-        for i, (doc, meta, dist) in enumerate(zip(
-            results["documents"][0],
-            results["metadatas"][0],
-            results["distances"][0]
-        )):
-            with st.expander(f"Article {i+1} - {meta['label']} ({dist:.4f})"):
-                st.markdown(f"**Titre:** {meta['title']}")
-                st.markdown(f"**Label:** {meta['label']}")
-                st.markdown(f"**Similarité:** {1-dist:.2%}")
-                st.markdown("**Extrait:**")
-                st.text(doc[:500] + "..." if len(doc) > 500 else doc)
+        if "error" in result:
+            st.error(result["error"])
+        else:
+            # Affichage du verdict
+            st.subheader("Verdict de l'analyse")
+            st.write(result["model_response"])
+            
+             # Extract verdict for color coding
+            response_text = result["model_response"].lower()
+            if "verdict: true" in response_text:
+                verdict_color = "green"
+                verdict = "VRAI"
+            elif "verdict: fake" in response_text:
+                verdict_color = "red"
+                verdict = "FAUX"
+            else:
+                verdict_color = "orange"
+                verdict = "INSUFFISANT"
+            
+            # Show verdict badge
+            st.markdown(f"### Résumé : :{verdict_color}[{verdict}]")
+            
+            # Show context in expander
+            with st.expander("Voir le contexte complet"):
+                st.text(result["context_used"])
+
 
 # Footer
 st.markdown("---")

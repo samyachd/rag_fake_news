@@ -1,11 +1,12 @@
 import streamlit as st
+import pathlib as Path
 import chromadb
 import ollama
 import numpy as np
 from . import clean_text_pipeline
 
-chroma_path = "/home/fadilatou/PROJETS/rag_fake_news/data"
-chroma_client = chromadb.PersistentClient(path=chroma_path)
+CHROMA_PATH = Path("data/embeddings")
+chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 
 # Configuration de la page
 st.set_page_config(
@@ -15,7 +16,6 @@ st.set_page_config(
 )
 
 # Constantes
-CHROMA_PATH = "/home/fadilatou/PROJETS/rag_fake_news/data"
 COLLECTION_NAME = "news_collection"
 MODEL_NAME = "all-minilm:latest"
 GEN_MODEL = "phi3:mini"

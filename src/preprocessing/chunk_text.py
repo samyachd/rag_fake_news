@@ -6,6 +6,8 @@ def chunk(path_load:str, cols:list, chunk_size=160, overlap=30) -> pd.DataFrame:
         avec un chevauchement optionnel entre les segments.
         """ 
         df = pd.read_csv(path_load)
+        df = df.head(5)
+        print(df)
         for col in cols:
             chunked_col = []
             for text in df[col].fillna("").astype(str):

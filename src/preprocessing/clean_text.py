@@ -16,7 +16,7 @@ class PreProcessing():
             if col not in df_fake.columns or col not in df_true.columns:
                 raise ValueError(f"Colonne manquante dans le DataFrame : {col}")
         df_fake["label"] = 0
-        df_true["true"] = 1
+        df_true["label"] = 1
         df = pd.concat([df_fake, df_true])
         df = df.drop_duplicates()
         return df
@@ -53,9 +53,13 @@ class PreProcessing():
     def clean_df(self):
 
         df = self.load_csv()
-        df = self.delete_url_html_specials_lower(df)
-        df = self.delete_stopwords(df)
+        df = self.delete_url_html_specials_lower_df(df)
+        df = self.delete_stopwords_df(df)
         return df
+    
+    def save_to_df(self, df, path:str):
+        df.to_csv(path)
+        return
     
     @staticmethod
     def delete_url_html_specials_lower_text(text:str) -> str:

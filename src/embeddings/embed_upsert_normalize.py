@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import os
+import ast
 from openai import AzureOpenAI
 
 def normalize_vectors(vectors):

@@ -11,6 +11,8 @@ app = typer.Typer(help="RAG Fake News")
 RAW_FAKE = Path("data/raw/Fake.csv")
 RAW_TRUE = Path("data/raw/True.csv")
 PROCESSED = Path("data/processed/Cleaned.csv")
+DATABASE = Path("data/embeddings")
+COLLECTION = "news_openai_collection"
 COLS = ["title","text"]
 
 @app.command()
@@ -19,7 +21,7 @@ def clean(path_fake:str = RAW_FAKE.as_posix(), path_true:str = RAW_TRUE.as_posix
 
     typer.echo("Étape CLEAN…")
     pp = PreProcessing(path_fake, path_true, COLS)
-    df_clean = pp.clean_df(PROCESSED.as_posix())
+    df_clean = pp.clean_df()
     pp.save_to_df(df_clean, PROCESSED.as_posix())
     typer.echo("CLEAN terminé")
     return
@@ -31,7 +33,7 @@ def embed(path_csv:str = PROCESSED.as_posix(),
               chunk_size:int = 120, 
               overlap:int = 30):
     
-    collection = Database().get_collection()
+    collection = Database(DATABASE, COLLECTION).get_collection()
     client = OpenClient()
 
     typer.echo("Étape CHUNK…")
@@ -46,7 +48,7 @@ def embed(path_csv:str = PROCESSED.as_posix(),
 @app.command()
 def query(eval:bool = typer.Option(False, "--evaluate", "-ev", help="Evaluer la réponse")):
 
-    collection = Database().get_collection()
+    collection = Database(DATABASE, COLLECTION).get_collection()
     client = OpenClient()
 
     typer.echo("Tapes ton prompt")

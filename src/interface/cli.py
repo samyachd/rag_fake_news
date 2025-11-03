@@ -19,7 +19,7 @@ def clean(path_fake:str = RAW_FAKE.as_posix(), path_true:str = RAW_TRUE.as_posix
 
     typer.echo("Étape CLEAN…")
     pp = PreProcessing(path_fake, path_true, COLS)
-    df_clean = pp.clean(PROCESSED.as_posix())
+    df_clean = pp.clean_df(PROCESSED.as_posix())
     pp.save_to_df(df_clean, PROCESSED.as_posix())
     typer.echo("CLEAN terminé")
     return

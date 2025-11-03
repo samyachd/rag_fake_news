@@ -6,7 +6,6 @@ def retrieve_text(client: AzureOpenAI, collection, user_text:str) -> list:
     
     user_text = PreProcessing.delete_url_html_specials_lower_text(text = user_text)
     user_text = PreProcessing.delete_stopwords_text(text = user_text)
-    print(user_text)
     query_embedding = client.embed(user_text)
     query_embedding = normalize_vectors(query_embedding)
 

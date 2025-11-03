@@ -78,8 +78,7 @@ class PreProcessing():
             str: Text with stopwords removed
         """
         nlp = get_spacy_model()
-        tokens_all = []
-        for doc in nlp.pipe(text, disable=["parser", "ner"]):
-            tokens = [tok.text for tok in doc if tok.text.strip() and not tok.is_stop]
-            tokens_all.append(tokens[0])
-        return tokens_all
+        doc = nlp(text)
+        tokens = [tok.text for tok in doc if tok.text.strip() and not tok.is_stop]
+        cleaned_text = " ".join(tokens)
+        return cleaned_text
